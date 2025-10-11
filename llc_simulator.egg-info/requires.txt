@@ -1,0 +1,6 @@
+numpy
+PySpice
+matplotlib
+numpy
+tabulate
+pandas

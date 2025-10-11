@@ -1,0 +1,16 @@
+Metadata-Version: 2.4
+Name: llc_simulator
+Version: 0.1
+Summary: Simulador de conversores LLC usando PySpice
+Author: GSEC
+Requires-Python: >=3.7
+Requires-Dist: numpy
+Requires-Dist: PySpice
+Requires-Dist: matplotlib
+Requires-Dist: numpy
+Requires-Dist: tabulate
+Requires-Dist: pandas
+Dynamic: author
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
