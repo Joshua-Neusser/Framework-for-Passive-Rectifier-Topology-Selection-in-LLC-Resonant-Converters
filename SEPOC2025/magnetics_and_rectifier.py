@@ -36,7 +36,6 @@ class MagneticDesigner:
     ##### Runs the design routines and display the results
     def display_comparison_report(self, tr_params: Dict, ls_params: Dict, operating_points: Sequence[Dict], TimeStep: int):
 
-        # Designs the 3 magnetic devices
         fw_results = self.transformer_design_and_loss_calculation(tr_params, 'FW', operating_points, TimeStep)
         fb_results = self.transformer_design_and_loss_calculation(tr_params, 'FB', operating_points, TimeStep)
         ls_results = self.run_inductor_design_and_loss(ls_params, operating_points)
@@ -85,15 +84,10 @@ class MagneticDesigner:
         print(design_df.to_string(index=False))
         print("\n" * 2)
 
-        # --- Tabela de Perdas ---
-
-        # Crie duas listas separadas para as linhas de cada tabela
         fw_rows = []
         fb_rows = []
 
-        # Itere sobre os pontos de operação uma única vez
         for i, op in enumerate(operating_points):
-            # Calcule o total de perdas para cada topologia
             fw_total_loss = (fw_results['losses'][i]['winding_loss_mw'] +
                              fw_results['losses'][i]['core_loss_mw'] +
                              fw_results['losses'][i]['rectifier_loss_mw'])
@@ -101,8 +95,7 @@ class MagneticDesigner:
             fb_total_loss = (fb_results['losses'][i]['winding_loss_mw'] +
                              fb_results['losses'][i]['core_loss_mw'] +
                              fb_results['losses'][i]['rectifier_loss_mw'])
-
-            # Adicione uma linha à lista de dados da topologia FW
+            
             fw_rows.append({
                 'Operating Point': op['case'],
                 'Winding Loss (mW)': f"{fw_results['losses'][i]['winding_loss_mw']:.1f}",
@@ -111,7 +104,6 @@ class MagneticDesigner:
                 'Total Loss (mW)': f"{fw_total_loss:.1f}"
             })
 
-            # Adicione uma linha à lista de dados da topologia FB
             fb_rows.append({
                 'Operating Point': op['case'],
                 'Winding Loss (mW)': f"{fb_results['losses'][i]['winding_loss_mw']:.1f}",
@@ -120,18 +112,15 @@ class MagneticDesigner:
                 'Total Loss (mW)': f"{fb_total_loss:.1f}"
             })
 
-        # Crie dois DataFrames separados
         fw_losses_df = pd.DataFrame(fw_rows)
         fb_losses_df = pd.DataFrame(fb_rows)
 
-        # Imprima a primeira tabela (FW) com seu próprio título
         print("="*83)
         print(" " * 22 + "Losses Table - Full-Wave (FW) Rectfier")
         print("="*83)
         print(fw_losses_df.to_string(index=False))
         print("\n")
 
-        # Imprima a segunda tabela (FB) com seu próprio título
         print("="*83)
         print(" " * 21 + "Losses Table - Full-Bridge (FB) Rectfier")
         print("="*83)
@@ -141,7 +130,6 @@ class MagneticDesigner:
 
         self._plot_loss_comparison(fw_results, fb_results, operating_points)
 
-        # Retorna os resultados para uso externo (plotagem, etc.)
         return fw_results, fb_results, ls_results
 
 
@@ -617,10 +605,8 @@ class MagneticDesigner:
     def _plot_loss_comparison(self, fw_results: Dict, fb_results: Dict, operating_points: Sequence[Dict]):
             """Cria e exibe um gráfico de barras comparando as perdas."""
 
-            # --- 1. Extração e Organização dos Dados ---
             op_labels = [op['case'] for op in operating_points]
 
-            # Extrai todas as perdas para cada topologia
             fw_losses = fw_results['losses']
             fb_losses = fb_results['losses']
 
@@ -632,43 +618,31 @@ class MagneticDesigner:
             fb_core    = np.array([res['core_loss_mw'] for res in fb_losses])
             fb_rect    = np.array([res['rectifier_loss_mw'] for res in fb_losses])
 
-            # Calcula perdas magnéticas e totais
             fw_magnetic = fw_winding + fw_core
             fb_magnetic = fb_winding + fb_core
             fw_total = fw_magnetic + fw_rect
             fb_total = fb_magnetic + fb_rect
             
-            # --- 2. Configuração do Gráfico ---
-            x = np.arange(len(op_labels))  # Posições dos rótulos no eixo X
-            width = 0.12  # Largura de cada barra
+            x = np.arange(len(op_labels)) 
+            width = 0.12  
             
-            # plt.style.use('seaborn-v0_8-whitegrid')
             fig, ax = plt.subplots(figsize=(8, 6))
             
-            # Define a fonte para ser consistente com o MATLAB
-            #plt.rcParams['font.family'] = 'Times New Roman'
-            #plt.rcParams['font.size'] = 12
 
-            # Define a cor do contorno e a largura
             edge_color = 'black'
-            line_width = 1 # Você pode ajustar a espessura do contorno aqui
+            line_width = 1 
 
-            # --- 3. Criação das Barras ---
-            # Par 1: Perdas Magnéticas (Azuis)
             ax.bar(x - 2.5*width, fw_magnetic, width, label='Transformer (FW)', color='#66b3ff', edgecolor=edge_color, linewidth=line_width)
             ax.bar(x - 1.5*width, fb_magnetic, width, label='Transformer (FB)', color='#004c99', edgecolor=edge_color, linewidth=line_width)
 
-            # Par 2: Perdas no Retificador (Verdes)
             ax.bar(x - 0.5*width, fw_rect, width, label='Rectifier (FW)', color='#99ff99', edgecolor=edge_color, linewidth=line_width)
             ax.bar(x + 0.5*width, fb_rect, width, label='Rectifier (FB)', color='#008000', edgecolor=edge_color, linewidth=line_width)
             
-            # Par 3: Perdas Totais (Vermelhos)
             ax.bar(x + 1.5*width, fw_total, width, label='Total (FW)', color='#ff9999', edgecolor=edge_color, linewidth=line_width)
             ax.bar(x + 2.5*width, fb_total, width, label='Total (FB)', color='#cc0000', edgecolor=edge_color, linewidth=line_width)
 
 
-            ax.tick_params(axis='both', labelsize=12) # <-- AUMENTEI O VALOR AQUI
-            # --- 4. Estilização e Rótulos ---
+            ax.tick_params(axis='both', labelsize=12) 
             ax.set_ylabel('Loss (mW)', fontsize=14)
             ax.set_xlabel('Operating Point', fontsize=14)
             ax.set_title('Losses by Rectifier Topology and Operating Point', fontsize=16)
@@ -676,9 +650,9 @@ class MagneticDesigner:
             ax.set_xticklabels(op_labels, rotation=0)
             ax.legend(loc='upper left')
             ax.grid(axis='y', linestyle=':', linewidth=1)
-            ax.set_axisbelow(True) # Coloca a grade atrás das barras
+            ax.set_axisbelow(True) 
 
-            fig.tight_layout() # Ajusta o layout para evitar sobreposição
+            fig.tight_layout() 
 
             plt.savefig('loss_comparison_chart.pdf', bbox_inches='tight')
             plt.show()
